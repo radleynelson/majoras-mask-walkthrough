@@ -240,21 +240,22 @@ export function AskAI({ sections, progress }: AskAIProps) {
   const messagesContent = (
     <>
       {messages.length === 0 && (
-        <div className="flex-1 flex items-center justify-center p-6 text-center text-muted-foreground text-sm">
-          Ask me anything about <strong className="text-foreground ml-1">{chapterTitle}</strong>!
-          <br />I have the full chapter details and know what you&apos;ve completed.
+        <div className="py-12 px-6 text-center text-muted-foreground text-sm leading-relaxed">
+          <Sparkles className="size-8 text-accent/40 mx-auto mb-3" />
+          <p>Ask me anything about <strong className="text-foreground">{chapterTitle}</strong>!</p>
+          <p className="mt-1 text-xs">I have the full chapter details and know what you&apos;ve completed.</p>
         </div>
       )}
       {messages.map((msg, i) => (
         <div
           key={i}
-          className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-2`}
+          className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-3`}
         >
           <div
-            className={`max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
+            className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
               msg.role === 'user'
-                ? 'bg-accent text-accent-foreground'
-                : 'bg-secondary text-secondary-foreground'
+                ? 'bg-accent text-accent-foreground rounded-br-md'
+                : 'bg-secondary text-secondary-foreground rounded-bl-md border border-border'
             }`}
           >
             {msg.text}
@@ -262,11 +263,9 @@ export function AskAI({ sections, progress }: AskAIProps) {
         </div>
       ))}
       {loading && (
-        <div className="flex justify-start mb-2">
-          <div className="bg-secondary text-muted-foreground rounded-xl px-3 py-2 text-sm flex gap-1">
-            <span className="ai-typing-dot">.</span>
-            <span className="ai-typing-dot">.</span>
-            <span className="ai-typing-dot">.</span>
+        <div className="flex justify-start mb-3">
+          <div className="bg-secondary text-muted-foreground rounded-2xl rounded-bl-md px-4 py-2.5 text-sm border border-border">
+            Thinking...
           </div>
         </div>
       )}
@@ -276,21 +275,21 @@ export function AskAI({ sections, progress }: AskAIProps) {
 
   // Input row (shared between mobile and desktop)
   const inputRow = (
-    <div className="flex gap-2 p-3 border-t border-border bg-card">
+    <div className="flex gap-2 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] border-t border-border bg-card flex-shrink-0">
       <Input
         type="text"
-        placeholder="How do I beat this boss?"
+        placeholder="Ask about this chapter..."
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && send()}
         disabled={loading}
-        className="flex-1 h-9 bg-secondary/50"
+        className="flex-1 h-10 text-[16px] bg-secondary/50"
       />
       <Button
         size="icon"
         onClick={send}
         disabled={loading || !input.trim()}
-        className="h-9 w-9 bg-accent hover:bg-accent/80 text-accent-foreground"
+        className="h-10 w-10 bg-accent hover:bg-accent/80 text-accent-foreground flex-shrink-0"
       >
         <Send className="size-4" />
       </Button>
@@ -315,7 +314,7 @@ export function AskAI({ sections, progress }: AskAIProps) {
       <>
         {!open && fab}
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className="bg-card border-border max-h-[90vh] flex flex-col">
+          <DrawerContent className="bg-card border-border h-[85dvh] flex flex-col">
             <DrawerHeader className="flex-shrink-0 pb-2">
               <div className="flex items-center justify-between">
                 <DrawerTitle className="flex items-center gap-2 text-foreground">

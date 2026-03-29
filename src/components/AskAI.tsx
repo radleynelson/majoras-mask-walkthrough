@@ -11,6 +11,7 @@ import {
   DrawerClose,
 } from './ui/drawer';
 import { X, Send, Trash2, ChevronDown, Sparkles } from 'lucide-react';
+import { guideContent } from '../data/guideContent';
 
 interface AskAIProps {
   sections: Section[];
@@ -53,10 +54,19 @@ function buildChapterContext(section: Section, chapterIndex: number, progress: P
   if (section.description) lines.push(section.description);
   lines.push('');
 
+  // Player's current progress
+  lines.push('=== PLAYER PROGRESS ===');
   for (const item of section.items) {
     const done = progress[item.id] ? '[DONE]' : '[TODO]';
     lines.push(`${done} ${item.text}`);
-    if (item.detail) lines.push(`  Detail: ${item.detail}`);
+  }
+
+  // Full detailed guide content
+  const guide = guideContent[section.id];
+  if (guide) {
+    lines.push('');
+    lines.push('=== DETAILED WALKTHROUGH GUIDE ===');
+    lines.push(guide);
   }
 
   return lines.join('\n');

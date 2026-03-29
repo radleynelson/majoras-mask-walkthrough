@@ -56,6 +56,7 @@ export function AskAI({ sections, progress }: AskAIProps) {
   const [input, setInput] = useState('');
   const [chats, setChats] = useState<ChatStore>(loadAllChats);
   const [loading, setLoading] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentIdx = useMemo(
@@ -63,13 +64,21 @@ export function AskAI({ sections, progress }: AskAIProps) {
     [sections, progress]
   );
 
-  const chapterId = sections[currentIdx]?.id || 'unknown';
-  const chapterTitle = sections[currentIdx]?.title || 'Unknown';
+  // Which chapter the user is viewing in the chat — defaults to current
+  const [viewingIdx, setViewingIdx] = useState(currentIdx);
+
+  // Reset to current chapter when panel opens
+  useEffect(() => {
+    if (open) setViewingIdx(currentIdx);
+  }, [open, currentIdx]);
+
+  const chapterId = sections[viewingIdx]?.id || 'unknown';
+  const chapterTitle = sections[viewingIdx]?.title || 'Unknown';
   const messages = chats[chapterId] || [];
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, viewingIdx]);
 
   const setMessages = (updater: (prev: Message[]) => Message[]) => {
     setChats((prev) => {
@@ -108,7 +117,7 @@ export function AskAI({ sections, progress }: AskAIProps) {
         body: JSON.stringify({
           message: q,
           history,
-          chapterContext: buildChapterContext(sections[currentIdx], currentIdx, progress),
+          chapterContext: buildChapterContext(sections[viewingIdx], viewingIdx, progress),
         }),
       });
 
@@ -140,7 +149,13 @@ export function AskAI({ sections, progress }: AskAIProps) {
       <div className="ask-ai-header">
         <div className="ask-ai-header-text">
           <span className="ask-ai-title">✦ Walkthrough Assistant</span>
-          <span className="ask-ai-chapter">Ch. {currentIdx + 1}: {chapterTitle}</span>
+          <button
+            className="ask-ai-chapter-btn"
+            onClick={() => setShowPicker(!showPicker)}
+          >
+            Ch. {viewingIdx + 1}: {chapterTitle}
+            <span className="ask-ai-chapter-arrow">{showPicker ? '▲' : '▼'}</span>
+          </button>
         </div>
         <div className="ask-ai-header-actions">
           {messages.length > 0 && (
@@ -149,6 +164,29 @@ export function AskAI({ sections, progress }: AskAIProps) {
           <button className="ask-ai-close" onClick={() => setOpen(false)}>✕</button>
         </div>
       </div>
+
+      {showPicker && (
+        <div className="ask-ai-picker">
+          {sections.map((s, i) => {
+            const hasChat = (chats[s.id]?.length || 0) > 0;
+            const msgCount = chats[s.id]?.length || 0;
+            return (
+              <button
+                key={s.id}
+                className={`ask-ai-picker-item ${i === viewingIdx ? 'active' : ''}`}
+                onClick={() => { setViewingIdx(i); setShowPicker(false); }}
+              >
+                <span className="ask-ai-picker-icon">{s.icon}</span>
+                <span className="ask-ai-picker-label">
+                  Ch. {i + 1}: {s.title}
+                </span>
+                {i === currentIdx && <span className="ask-ai-picker-current">Current</span>}
+                {hasChat && <span className="ask-ai-picker-count">{msgCount}</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <div className="ask-ai-messages">
         {messages.length === 0 && (

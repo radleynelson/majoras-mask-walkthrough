@@ -67,9 +67,15 @@ export function AskAI({ sections, progress }: AskAIProps) {
   // Which chapter the user is viewing in the chat — defaults to current
   const [viewingIdx, setViewingIdx] = useState(currentIdx);
 
-  // Reset to current chapter when panel opens
+  // Reset to current chapter when panel opens + lock body scroll on mobile
   useEffect(() => {
-    if (open) setViewingIdx(currentIdx);
+    if (open) {
+      setViewingIdx(currentIdx);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
   }, [open, currentIdx]);
 
   const chapterId = sections[viewingIdx]?.id || 'unknown';

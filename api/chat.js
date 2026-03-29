@@ -64,7 +64,7 @@ ${chapterContext ? `The player is currently on this chapter of the walkthrough:\
 
     const chat = model.startChat({
       history: chatHistory,
-      generationConfig: { maxOutputTokens: 500 },
+      generationConfig: { maxOutputTokens: 2000 },
     });
 
     const result = await chat.sendMessage(message);

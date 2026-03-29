@@ -67,16 +67,50 @@ export function AskAI({ sections, progress }: AskAIProps) {
   // Which chapter the user is viewing in the chat — defaults to current
   const [viewingIdx, setViewingIdx] = useState(currentIdx);
 
+  const panelRef = useRef<HTMLDivElement>(null);
+
   // Reset to current chapter when panel opens + lock body scroll on mobile
   useEffect(() => {
     if (open) {
       setViewingIdx(currentIdx);
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.top = `-${window.scrollY}px`;
     } else {
+      const scrollY = document.body.style.top;
       document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+      if (scrollY) window.scrollTo(0, parseInt(scrollY) * -1);
+    };
   }, [open, currentIdx]);
+
+  // Handle iOS keyboard resize
+  useEffect(() => {
+    if (!open) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const onResize = () => {
+      if (panelRef.current) {
+        panelRef.current.style.height = `${vv.height}px`;
+      }
+    };
+
+    vv.addEventListener('resize', onResize);
+    onResize();
+    return () => vv.removeEventListener('resize', onResize);
+  }, [open]);
 
   const chapterId = sections[viewingIdx]?.id || 'unknown';
   const chapterTitle = sections[viewingIdx]?.title || 'Unknown';
@@ -151,7 +185,7 @@ export function AskAI({ sections, progress }: AskAIProps) {
   }
 
   return (
-    <div className="ask-ai-panel">
+    <div className="ask-ai-panel" ref={panelRef}>
       <div className="ask-ai-header">
         <div className="ask-ai-header-text">
           <span className="ask-ai-title">✦ Walkthrough Assistant</span>

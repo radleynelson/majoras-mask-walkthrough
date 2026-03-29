@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many requests. Try again later.' });
   }
 
-  const { message, chapterContext } = req.body;
+  const { message, history, chapterContext } = req.body;
 
   if (!message || typeof message !== 'string' || message.length > 1000) {
     return res.status(400).json({ error: 'Invalid message' });
@@ -43,14 +43,31 @@ Keep responses focused and under 200 words unless the player needs a detailed wa
 
 ${chapterContext ? `The player is currently on this chapter of the walkthrough:\n\n${chapterContext}` : ''}`;
 
+  // Build chat history from previous messages
+  const chatHistory = [];
+  if (Array.isArray(history)) {
+    for (const msg of history.slice(-20)) { // Keep last 20 messages max
+      if (msg.role === 'user' || msg.role === 'model') {
+        chatHistory.push({
+          role: msg.role,
+          parts: [{ text: msg.text }],
+        });
+      }
+    }
+  }
+
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash',
+      systemInstruction: systemPrompt,
+    });
+
     const chat = model.startChat({
-      history: [],
+      history: chatHistory,
       generationConfig: { maxOutputTokens: 500 },
     });
 
-    const result = await chat.sendMessage(`${systemPrompt}\n\nPlayer's question: ${message}`);
+    const result = await chat.sendMessage(message);
     const response = result.response.text();
 
     return res.status(200).json({ reply: response });

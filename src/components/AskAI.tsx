@@ -54,12 +54,18 @@ export function AskAI({ sections, progress }: AskAIProps) {
     setMessages((prev) => [...prev, { role: 'user', text: q }]);
     setLoading(true);
 
+    const history = messages.map((m) => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      text: m.text,
+    }));
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: q,
+          history,
           chapterContext: buildChapterContext(sections, progress),
         }),
       });

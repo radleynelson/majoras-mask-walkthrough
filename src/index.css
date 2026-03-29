@@ -736,26 +736,12 @@ body {
     padding: 0 10px 80px;
   }
 
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+  .header-logo-img {
+    height: 22px;
   }
 
-  .compact .header-content {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .header-stats {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .compact .header-stats {
-    width: auto;
+  .compact .header-logo-img {
+    height: 16px;
   }
 
   .section-title {

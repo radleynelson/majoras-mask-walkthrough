@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import type { Section, Progress } from '../types';
 
 interface AskAIProps {
@@ -11,18 +11,34 @@ interface Message {
   text: string;
 }
 
-function buildChapterContext(sections: Section[], progress: Progress): string {
-  // Find current chapter (first with unchecked items)
-  let currentIdx = sections.length - 1;
-  for (let i = 0; i < sections.length; i++) {
-    if (!sections[i].items.every((item) => progress[item.id])) {
-      currentIdx = i;
-      break;
-    }
-  }
+type ChatStore = Record<string, Message[]>;
 
-  const section = sections[currentIdx];
-  const lines = [`Chapter ${currentIdx + 1}: ${section.title}`];
+const CHAT_KEY = 'mm-walkthrough-chats';
+
+function loadAllChats(): ChatStore {
+  try {
+    const stored = localStorage.getItem(CHAT_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveAllChats(chats: ChatStore) {
+  try {
+    localStorage.setItem(CHAT_KEY, JSON.stringify(chats));
+  } catch { /* storage full */ }
+}
+
+function getCurrentChapterIndex(sections: Section[], progress: Progress): number {
+  for (let i = 0; i < sections.length; i++) {
+    if (!sections[i].items.every((item) => progress[item.id])) return i;
+  }
+  return sections.length - 1;
+}
+
+function buildChapterContext(section: Section, chapterIndex: number, progress: Progress): string {
+  const lines = [`Chapter ${chapterIndex + 1}: ${section.title}`];
   if (section.description) lines.push(section.description);
   lines.push('');
 
@@ -35,34 +51,42 @@ function buildChapterContext(sections: Section[], progress: Progress): string {
   return lines.join('\n');
 }
 
-const CHAT_KEY = 'mm-walkthrough-chat';
-
-function loadChat(): Message[] {
-  try {
-    const stored = localStorage.getItem(CHAT_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveChat(messages: Message[]) {
-  try {
-    localStorage.setItem(CHAT_KEY, JSON.stringify(messages.slice(-50)));
-  } catch { /* storage full */ }
-}
-
 export function AskAI({ sections, progress }: AskAIProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>(loadChat);
+  const [chats, setChats] = useState<ChatStore>(loadAllChats);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const currentIdx = useMemo(
+    () => getCurrentChapterIndex(sections, progress),
+    [sections, progress]
+  );
+
+  const chapterId = sections[currentIdx]?.id || 'unknown';
+  const chapterTitle = sections[currentIdx]?.title || 'Unknown';
+  const messages = chats[chapterId] || [];
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    if (messages.length > 0) saveChat(messages);
   }, [messages]);
+
+  const setMessages = (updater: (prev: Message[]) => Message[]) => {
+    setChats((prev) => {
+      const updated = { ...prev, [chapterId]: updater(prev[chapterId] || []).slice(-50) };
+      saveAllChats(updated);
+      return updated;
+    });
+  };
+
+  const clearChat = () => {
+    setChats((prev) => {
+      const updated = { ...prev };
+      delete updated[chapterId];
+      saveAllChats(updated);
+      return updated;
+    });
+  };
 
   const send = async () => {
     const q = input.trim();
@@ -84,7 +108,7 @@ export function AskAI({ sections, progress }: AskAIProps) {
         body: JSON.stringify({
           message: q,
           history,
-          chapterContext: buildChapterContext(sections, progress),
+          chapterContext: buildChapterContext(sections[currentIdx], currentIdx, progress),
         }),
       });
 
@@ -114,10 +138,13 @@ export function AskAI({ sections, progress }: AskAIProps) {
   return (
     <div className="ask-ai-panel">
       <div className="ask-ai-header">
-        <span className="ask-ai-title">✦ Walkthrough Assistant</span>
+        <div className="ask-ai-header-text">
+          <span className="ask-ai-title">✦ Walkthrough Assistant</span>
+          <span className="ask-ai-chapter">Ch. {currentIdx + 1}: {chapterTitle}</span>
+        </div>
         <div className="ask-ai-header-actions">
           {messages.length > 0 && (
-            <button className="ask-ai-clear" onClick={() => { setMessages([]); localStorage.removeItem(CHAT_KEY); }}>Clear</button>
+            <button className="ask-ai-clear" onClick={clearChat}>Clear</button>
           )}
           <button className="ask-ai-close" onClick={() => setOpen(false)}>✕</button>
         </div>
@@ -126,7 +153,7 @@ export function AskAI({ sections, progress }: AskAIProps) {
       <div className="ask-ai-messages">
         {messages.length === 0 && (
           <div className="ask-ai-empty">
-            Ask me anything about Majora's Mask! I know where you are in the walkthrough and can help with puzzles, bosses, collectibles, and more.
+            Ask me anything about <strong>{chapterTitle}</strong>! I have the full chapter details and know what you've completed.
           </div>
         )}
         {messages.map((msg, i) => (

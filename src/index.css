@@ -774,10 +774,25 @@ body {
   flex-shrink: 0;
 }
 
+.ask-ai-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
 .ask-ai-title {
   font-size: 14px;
   font-weight: 600;
   color: white;
+}
+
+.ask-ai-chapter {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ask-ai-header-actions {

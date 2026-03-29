@@ -5,6 +5,9 @@ import { TableOfContents } from './components/TableOfContents';
 import { AskAI } from './components/AskAI';
 import { useProgress } from './hooks/useLocalStorage';
 import { walkthrough } from './data/walkthrough';
+import { Input } from './components/ui/input';
+import { Button } from './components/ui/button';
+import { Search } from 'lucide-react';
 
 function App() {
   const { progress, toggleItem, resetAll, bulkComplete } = useProgress();
@@ -46,60 +49,66 @@ function App() {
   }, [search]);
 
   return (
-    <>
+    <div className="min-h-screen bg-background text-foreground">
       <Header sections={walkthrough} progress={progress} onResetAll={resetAll} />
 
-      <div className="search-container">
-        <span className="search-icon">🔍</span>
-        <input
-          className="search-input"
-          type="text"
-          placeholder="Search items, masks, heart pieces..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-
-      <button
-        className="toc-toggle"
-        onClick={() => setShowTOC(!showTOC)}
-      >
-        {showTOC ? 'Hide' : 'Show'} Table of Contents
-      </button>
-
-      {showTOC && <TableOfContents sections={walkthrough} progress={progress} />}
-
-      <div className="sections-list">
-        {filteredSections.map((section) => {
-          const realIndex = walkthrough.findIndex((s) => s.id === section.id);
-          return (
-            <div key={section.id} id={section.id}>
-              <SectionCard
-                section={section}
-                progress={progress}
-                onToggle={toggleItem}
-                sectionIndex={realIndex}
-                isCurrent={realIndex === currentChapterIndex}
-                onCompleteUpTo={() => completeUpTo(realIndex)}
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      {filteredSections.length === 0 && (
-        <div className="empty-state">
-          <p>No items found matching "{search}"</p>
+      <main className="max-w-3xl mx-auto px-4 pb-24">
+        {/* Search */}
+        <div className="relative my-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search items, masks, heart pieces..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-10 bg-card border-border"
+          />
         </div>
-      )}
 
-      <footer className="app-footer">
-        <p>Majora's Mask 100% Walkthrough Checklist</p>
-        <p>Progress saved in your browser</p>
-      </footer>
+        {/* TOC toggle */}
+        <Button
+          variant="outline"
+          className="w-full mb-4"
+          onClick={() => setShowTOC(!showTOC)}
+        >
+          {showTOC ? 'Hide' : 'Show'} Table of Contents
+        </Button>
+
+        {showTOC && <TableOfContents sections={walkthrough} progress={progress} />}
+
+        {/* Sections */}
+        <div className="flex flex-col gap-4">
+          {filteredSections.map((section) => {
+            const realIndex = walkthrough.findIndex((s) => s.id === section.id);
+            return (
+              <div key={section.id} id={section.id}>
+                <SectionCard
+                  section={section}
+                  progress={progress}
+                  onToggle={toggleItem}
+                  sectionIndex={realIndex}
+                  isCurrent={realIndex === currentChapterIndex}
+                  onCompleteUpTo={() => completeUpTo(realIndex)}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {filteredSections.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            <p>No items found matching &ldquo;{search}&rdquo;</p>
+          </div>
+        )}
+
+        <footer className="text-center py-8 mt-8 border-t border-border text-muted-foreground text-sm">
+          <p>Majora&apos;s Mask 100% Walkthrough Checklist</p>
+          <p className="mt-1">Progress saved in your browser</p>
+        </footer>
+      </main>
 
       <AskAI sections={walkthrough} progress={progress} />
-    </>
+    </div>
   );
 }
 

@@ -7,9 +7,9 @@ interface TOCProps {
 
 export function TableOfContents({ sections, progress }: TOCProps) {
   return (
-    <nav className="toc">
-      <h3 className="toc-title">Chapters</h3>
-      <ul className="toc-list">
+    <nav className="mb-4 rounded-xl bg-card border border-border p-4">
+      <h3 className="text-sm font-semibold text-gold mb-3">Chapters</h3>
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1">
         {sections.map((section) => {
           const completed = section.items.filter((item) => progress[item.id]).length;
           const total = section.items.length;
@@ -17,17 +17,19 @@ export function TableOfContents({ sections, progress }: TOCProps) {
           return (
             <li key={section.id}>
               <a
-                className={`toc-link ${isDone ? 'toc-done' : ''}`}
+                className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm transition-colors hover:bg-secondary/70 ${
+                  isDone ? 'text-muted-foreground' : 'text-foreground'
+                }`}
                 href={`#${section.id}`}
                 onClick={(e) => {
                   e.preventDefault();
                   document.getElementById(section.id)?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                <span className="toc-icon">{section.icon}</span>
-                <span className="toc-section-name">{section.title}</span>
-                <span className="toc-progress">
-                  {isDone ? '✅' : `${completed}/${total}`}
+                <span className="flex-shrink-0">{section.icon}</span>
+                <span className="truncate flex-1">{section.title}</span>
+                <span className="text-xs text-muted-foreground flex-shrink-0 tabular-nums">
+                  {isDone ? '\u2705' : `${completed}/${total}`}
                 </span>
               </a>
             </li>

@@ -51,7 +51,7 @@ function App() {
       {showTOC && <TableOfContents sections={walkthrough} progress={progress} />}
 
       <div className="sections-list">
-        {filteredSections.map((section, i) => (
+        {filteredSections.map((section) => (
           <div key={section.id} id={section.id}>
             <SectionCard
               section={section}

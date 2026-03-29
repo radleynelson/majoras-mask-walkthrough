@@ -10,7 +10,7 @@ export function TableOfContents({ sections, progress }: TOCProps) {
     <nav className="toc">
       <h3 className="toc-title">Chapters</h3>
       <ul className="toc-list">
-        {sections.map((section, i) => {
+        {sections.map((section) => {
           const completed = section.items.filter((item) => progress[item.id]).length;
           const total = section.items.length;
           const isDone = completed === total && total > 0;

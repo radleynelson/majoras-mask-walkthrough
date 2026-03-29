@@ -90,54 +90,10 @@ export function AskAI({ sections, progress }: AskAIProps) {
 
   const [viewingIdx, setViewingIdx] = useState(currentIdx);
 
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  // Reset to current chapter when panel opens + lock body scroll on desktop
+  // Reset to current chapter when panel opens
   useEffect(() => {
-    if (open) {
-      setViewingIdx(currentIdx);
-      if (!isMobile) {
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.width = '100%';
-        document.body.style.top = `-${window.scrollY}px`;
-      }
-    } else if (!isMobile) {
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
-      window.scrollTo(0, parseInt(scrollY || '0') * -1);
-    }
-    return () => {
-      if (!isMobile) {
-        const scrollY = document.body.style.top;
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.width = '';
-        document.body.style.top = '';
-        if (scrollY) window.scrollTo(0, parseInt(scrollY) * -1);
-      }
-    };
-  }, [open, currentIdx, isMobile]);
-
-  // Handle iOS keyboard resize (desktop panel)
-  useEffect(() => {
-    if (!open || isMobile) return;
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    const onResize = () => {
-      if (panelRef.current) {
-        panelRef.current.style.height = `${vv.height}px`;
-      }
-    };
-
-    vv.addEventListener('resize', onResize);
-    onResize();
-    return () => vv.removeEventListener('resize', onResize);
-  }, [open, isMobile]);
+    if (open) setViewingIdx(currentIdx);
+  }, [open, currentIdx]);
 
   const chapterId = sections[viewingIdx]?.id || 'unknown';
   const chapterTitle = sections[viewingIdx]?.title || 'Unknown';
@@ -313,8 +269,8 @@ export function AskAI({ sections, progress }: AskAIProps) {
     return (
       <>
         {!open && fab}
-        <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className="bg-card border-border h-[85dvh] flex flex-col">
+        <Drawer open={open} onOpenChange={setOpen} shouldScaleBackground={false}>
+          <DrawerContent className="bg-card border-border max-h-[85dvh] flex flex-col" style={{ maxHeight: '85dvh' }}>
             <DrawerHeader className="flex-shrink-0 pb-2">
               <div className="flex items-center justify-between">
                 <DrawerTitle className="flex items-center gap-2 text-foreground">
@@ -371,7 +327,6 @@ export function AskAI({ sections, progress }: AskAIProps) {
 
   return (
     <div
-      ref={panelRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
     >

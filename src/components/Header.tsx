@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import type { Section, Progress } from '../types';
 
 interface HeaderProps {
@@ -7,6 +8,15 @@ interface HeaderProps {
 }
 
 export function Header({ sections, progress, onResetAll }: HeaderProps) {
+  const [compact, setCompact] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setCompact(window.scrollY > 80);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const totalItems = sections.reduce((sum, s) => sum + s.items.length, 0);
   const completedItems = sections.reduce(
     (sum, s) => sum + s.items.filter((i) => progress[i.id]).length,
@@ -15,7 +25,7 @@ export function Header({ sections, progress, onResetAll }: HeaderProps) {
   const pct = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
   return (
-    <header className="app-header">
+    <header className={`app-header ${compact ? 'compact' : ''}`}>
       <div className="header-content">
         <div className="header-title-row">
           <img
@@ -23,7 +33,7 @@ export function Header({ sections, progress, onResetAll }: HeaderProps) {
             alt="Majora's Mask"
             className="header-mask-img"
           />
-          <div>
+          <div className="header-title-text">
             <img
               src="/majoras-mask-logo.svg"
               alt="The Legend of Zelda: Majora's Mask"

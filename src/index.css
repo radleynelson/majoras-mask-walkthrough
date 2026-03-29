@@ -46,10 +46,17 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: linear-gradient(180deg, var(--bg-primary) 60%, transparent);
-  padding: 16px 0 24px;
+  background: var(--bg-primary);
+  padding: 16px 0 20px;
+  transition: padding 0.25s ease, background 0.25s ease;
+}
+
+.app-header.compact {
+  padding: 8px 0;
+  background: rgba(10, 14, 26, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
 }
 
 .header-content {
@@ -63,6 +70,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .header-mask-img {
@@ -71,6 +79,16 @@ body {
   flex-shrink: 0;
   object-fit: contain;
   filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.4));
+  transition: width 0.25s ease, height 0.25s ease;
+}
+
+.compact .header-mask-img {
+  width: 32px;
+  height: 32px;
+}
+
+.header-title-text {
+  min-width: 0;
 }
 
 .header-logo-img {
@@ -78,15 +96,11 @@ body {
   width: auto;
   display: block;
   filter: brightness(1.2) drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+  transition: height 0.25s ease;
 }
 
-.header-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--gold);
-  line-height: 1.2;
-  letter-spacing: -0.5px;
-  display: none;
+.compact .header-logo-img {
+  height: 18px;
 }
 
 .header-subtitle {
@@ -95,18 +109,34 @@ body {
   font-weight: 500;
   letter-spacing: 1px;
   text-transform: uppercase;
+  transition: font-size 0.25s ease, margin-top 0.25s ease, opacity 0.25s ease, max-height 0.25s ease;
+  max-height: 20px;
+  overflow: hidden;
+}
+
+.compact .header-subtitle {
+  font-size: 0;
+  max-height: 0;
+  opacity: 0;
 }
 
 .header-stats {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .progress-ring-container {
   position: relative;
   width: 56px;
   height: 56px;
+  transition: width 0.25s ease, height 0.25s ease;
+}
+
+.compact .progress-ring-container {
+  width: 36px;
+  height: 36px;
 }
 
 .progress-ring {
@@ -133,22 +163,37 @@ body {
   font-size: 13px;
   font-weight: 700;
   color: var(--gold);
+  transition: font-size 0.25s ease;
+}
+
+.compact .progress-ring-text {
+  font-size: 10px;
 }
 
 .progress-details {
   display: flex;
   flex-direction: column;
+  transition: opacity 0.2s ease, max-width 0.25s ease;
+  max-width: 120px;
+  overflow: hidden;
+}
+
+.compact .progress-details {
+  opacity: 0;
+  max-width: 0;
 }
 
 .progress-count {
   font-size: 16px;
   font-weight: 700;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 
 .progress-label {
   font-size: 11px;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .reset-btn {
@@ -162,6 +207,16 @@ body {
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  max-height: 40px;
+  overflow: hidden;
+}
+
+.compact .reset-btn {
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+  border-color: transparent;
+  opacity: 0;
 }
 
 .reset-btn:hover {
@@ -252,7 +307,7 @@ body {
   margin-bottom: 16px;
   overflow: hidden;
   transition: border-color 0.3s;
-  scroll-margin-top: 110px;
+  scroll-margin-top: 60px;
 }
 
 .section-card.section-current {

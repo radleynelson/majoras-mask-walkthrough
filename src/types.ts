@@ -16,6 +16,7 @@ export interface ChecklistItem {
   text: string;
   type: ItemType;
   detail?: string;
+  subsection?: string;
 }
 
 export interface Section {

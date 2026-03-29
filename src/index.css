@@ -398,6 +398,24 @@ body {
   border-color: var(--accent);
 }
 
+/* ============ SUBSECTION HEADERS ============ */
+.subsection-header {
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 14px 0 6px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(200, 168, 78, 0.15);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.subsection-header.first {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
 /* ============ CHECKLIST ============ */
 .checklist {
   list-style: none;

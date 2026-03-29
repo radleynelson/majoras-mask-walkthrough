@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import type { Section, Progress, ItemType } from '../types';
+import { useState, useMemo } from 'react';
+import type { Section, Progress, ItemType, ChecklistItem } from '../types';
 import { TYPE_COLORS, TYPE_ICONS, TYPE_LABELS } from '../types';
 import { ChecklistRow } from './ChecklistRow';
 
@@ -11,6 +11,11 @@ interface SectionCardProps {
 }
 
 type FilterType = 'all' | ItemType;
+
+interface ItemGroup {
+  subsection: string | null;
+  items: ChecklistItem[];
+}
 
 export function SectionCard({ section, progress, onToggle, sectionIndex }: SectionCardProps) {
   const [collapsed, setCollapsed] = useState(false);
@@ -26,6 +31,23 @@ export function SectionCard({ section, progress, onToggle, sectionIndex }: Secti
 
   const filteredItems =
     filter === 'all' ? section.items : section.items.filter((i) => i.type === filter);
+
+  // Group items by subsection
+  const groupedItems = useMemo(() => {
+    const groups: ItemGroup[] = [];
+    let currentSub: string | null | undefined = undefined;
+
+    for (const item of filteredItems) {
+      const sub = item.subsection || null;
+      if (sub !== currentSub) {
+        groups.push({ subsection: sub, items: [item] });
+        currentSub = sub;
+      } else {
+        groups[groups.length - 1].items.push(item);
+      }
+    }
+    return groups;
+  }, [filteredItems]);
 
   return (
     <div className={`section-card ${isDone ? 'section-done' : ''}`}>
@@ -88,16 +110,23 @@ export function SectionCard({ section, progress, onToggle, sectionIndex }: Secti
             </div>
           )}
 
-          <ul className="checklist">
-            {filteredItems.map((item) => (
-              <ChecklistRow
-                key={item.id}
-                item={item}
-                checked={!!progress[item.id]}
-                onToggle={() => onToggle(item.id)}
-              />
-            ))}
-          </ul>
+          {groupedItems.map((group, gi) => (
+            <div key={gi}>
+              {group.subsection && (
+                <h3 className={`subsection-header${gi === 0 ? ' first' : ''}`}>{group.subsection}</h3>
+              )}
+              <ul className="checklist">
+                {group.items.map((item) => (
+                  <ChecklistRow
+                    key={item.id}
+                    item={item}
+                    checked={!!progress[item.id]}
+                    onToggle={() => onToggle(item.id)}
+                  />
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -35,15 +35,33 @@ function buildChapterContext(sections: Section[], progress: Progress): string {
   return lines.join('\n');
 }
 
+const CHAT_KEY = 'mm-walkthrough-chat';
+
+function loadChat(): Message[] {
+  try {
+    const stored = localStorage.getItem(CHAT_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveChat(messages: Message[]) {
+  try {
+    localStorage.setItem(CHAT_KEY, JSON.stringify(messages.slice(-50)));
+  } catch { /* storage full */ }
+}
+
 export function AskAI({ sections, progress }: AskAIProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(loadChat);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 0) saveChat(messages);
   }, [messages]);
 
   const send = async () => {
@@ -97,7 +115,12 @@ export function AskAI({ sections, progress }: AskAIProps) {
     <div className="ask-ai-panel">
       <div className="ask-ai-header">
         <span className="ask-ai-title">✦ Walkthrough Assistant</span>
-        <button className="ask-ai-close" onClick={() => setOpen(false)}>✕</button>
+        <div className="ask-ai-header-actions">
+          {messages.length > 0 && (
+            <button className="ask-ai-clear" onClick={() => { setMessages([]); localStorage.removeItem(CHAT_KEY); }}>Clear</button>
+          )}
+          <button className="ask-ai-close" onClick={() => setOpen(false)}>✕</button>
+        </div>
       </div>
 
       <div className="ask-ai-messages">

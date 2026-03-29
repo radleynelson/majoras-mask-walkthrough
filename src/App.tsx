@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { Header } from './components/Header';
 import { SectionCard } from './components/SectionCard';
 import { TableOfContents } from './components/TableOfContents';
+import { AskAI } from './components/AskAI';
 import { useProgress } from './hooks/useLocalStorage';
 import { walkthrough } from './data/walkthrough';
 
@@ -96,6 +97,8 @@ function App() {
         <p>Majora's Mask 100% Walkthrough Checklist</p>
         <p>Progress saved in your browser</p>
       </footer>
+
+      <AskAI sections={walkthrough} progress={progress} />
     </>
   );
 }

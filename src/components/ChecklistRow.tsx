@@ -14,12 +14,13 @@ export function ChecklistRow({ item, checked, onToggle }: ChecklistRowProps) {
   return (
     <li className={`checklist-row ${checked ? 'checked' : ''}`}>
       <div className="checklist-row-top">
-        <label className="checklist-label">
+        <div className="checklist-checkbox-wrap" onClick={onToggle}>
           <input
             type="checkbox"
             checked={checked}
             onChange={onToggle}
             className="checklist-checkbox"
+            tabIndex={-1}
           />
           <span className="checkmark" style={{ borderColor: TYPE_COLORS[item.type] }}>
             {checked && (
@@ -35,8 +36,15 @@ export function ChecklistRow({ item, checked, onToggle }: ChecklistRowProps) {
               </svg>
             )}
           </span>
-          <div className="checklist-text-group">
-            <span className="checklist-text">{item.text}</span>
+        </div>
+        <div
+          className="checklist-text-group"
+          onClick={() => item.detail && setShowDetail(!showDetail)}
+          role={item.detail ? 'button' : undefined}
+          tabIndex={item.detail ? 0 : undefined}
+        >
+          <span className="checklist-text">{item.text}</span>
+          <div className="checklist-meta">
             <span
               className="type-badge"
               style={{
@@ -46,17 +54,11 @@ export function ChecklistRow({ item, checked, onToggle }: ChecklistRowProps) {
             >
               {TYPE_ICONS[item.type]} {TYPE_LABELS[item.type]}
             </span>
+            {item.detail && (
+              <span className="detail-hint">{showDetail ? '▲ Less' : '▼ More info'}</span>
+            )}
           </div>
-        </label>
-        {item.detail && (
-          <button
-            className="detail-toggle"
-            onClick={() => setShowDetail(!showDetail)}
-            aria-label="Toggle details"
-          >
-            {showDetail ? '▲' : 'ℹ️'}
-          </button>
-        )}
+        </div>
       </div>
       {showDetail && item.detail && (
         <div className="checklist-detail">{item.detail}</div>

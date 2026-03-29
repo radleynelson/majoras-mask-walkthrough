@@ -423,11 +423,16 @@ body {
 
 .checklist-row {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  flex-direction: column;
   padding: 10px 0;
   border-bottom: 1px solid var(--border);
   transition: opacity 0.2s;
+}
+
+.checklist-row-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .checklist-row:last-child {
@@ -525,7 +530,7 @@ body {
 }
 
 .checklist-detail {
-  margin: 8px 0 4px 32px;
+  margin: 10px 0 4px 32px;
   padding: 10px 12px;
   background: var(--bg-secondary);
   border-radius: var(--radius-sm);

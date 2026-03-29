@@ -65,9 +65,9 @@ body {
   gap: 12px;
 }
 
-.header-mask {
-  font-size: 40px;
-  line-height: 1;
+.header-mask-svg {
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.4));
 }
 
 .header-title {
@@ -244,9 +244,28 @@ body {
   scroll-margin-top: 110px;
 }
 
+.section-card.section-current {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(200, 168, 78, 0.15);
+}
+
 .section-card.section-done {
   border-color: var(--success);
   opacity: 0.85;
+}
+
+.current-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  background: var(--gold);
+  color: var(--bg-primary);
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  vertical-align: middle;
 }
 
 .section-header {
@@ -367,6 +386,26 @@ body {
   color: var(--text-muted);
   margin-bottom: 12px;
   line-height: 1.5;
+}
+
+.complete-upto-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  margin-bottom: 12px;
+  background: rgba(200, 168, 78, 0.1);
+  border: 1px solid rgba(200, 168, 78, 0.3);
+  border-radius: var(--radius-sm);
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.complete-upto-btn:hover {
+  background: rgba(200, 168, 78, 0.2);
+  border-color: var(--gold);
 }
 
 .section-filters {

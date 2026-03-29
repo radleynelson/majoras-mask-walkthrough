@@ -45,5 +45,14 @@ export function useProgress() {
     });
   }, []);
 
-  return { progress, toggleItem, resetAll, resetSection };
+  const bulkComplete = useCallback((itemIds: string[]) => {
+    setProgress((prev) => {
+      const next = { ...prev };
+      itemIds.forEach((id) => { next[id] = true; });
+      saveProgress(next);
+      return next;
+    });
+  }, []);
+
+  return { progress, toggleItem, resetAll, resetSection, bulkComplete };
 }

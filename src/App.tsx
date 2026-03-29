@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Header } from './components/Header';
 import { SectionCard } from './components/SectionCard';
 import { TableOfContents } from './components/TableOfContents';
@@ -6,9 +6,27 @@ import { useProgress } from './hooks/useLocalStorage';
 import { walkthrough } from './data/walkthrough';
 
 function App() {
-  const { progress, toggleItem, resetAll } = useProgress();
+  const { progress, toggleItem, resetAll, bulkComplete } = useProgress();
   const [search, setSearch] = useState('');
   const [showTOC, setShowTOC] = useState(false);
+
+  // Find the current chapter = first section with at least one unchecked item
+  const currentChapterIndex = useMemo(() => {
+    for (let i = 0; i < walkthrough.length; i++) {
+      const allDone = walkthrough[i].items.every((item) => progress[item.id]);
+      if (!allDone) return i;
+    }
+    return walkthrough.length - 1; // all done, show last
+  }, [progress]);
+
+  // Complete all items up to and including a given section
+  const completeUpTo = useCallback((sectionIndex: number) => {
+    const ids: string[] = [];
+    for (let i = 0; i <= sectionIndex; i++) {
+      walkthrough[i].items.forEach((item) => ids.push(item.id));
+    }
+    bulkComplete(ids);
+  }, [bulkComplete]);
 
   const filteredSections = useMemo(() => {
     if (!search.trim()) return walkthrough;
@@ -51,16 +69,21 @@ function App() {
       {showTOC && <TableOfContents sections={walkthrough} progress={progress} />}
 
       <div className="sections-list">
-        {filteredSections.map((section) => (
-          <div key={section.id} id={section.id}>
-            <SectionCard
-              section={section}
-              progress={progress}
-              onToggle={toggleItem}
-              sectionIndex={walkthrough.findIndex((s) => s.id === section.id)}
-            />
-          </div>
-        ))}
+        {filteredSections.map((section) => {
+          const realIndex = walkthrough.findIndex((s) => s.id === section.id);
+          return (
+            <div key={section.id} id={section.id}>
+              <SectionCard
+                section={section}
+                progress={progress}
+                onToggle={toggleItem}
+                sectionIndex={realIndex}
+                isCurrent={realIndex === currentChapterIndex}
+                onCompleteUpTo={() => completeUpTo(realIndex)}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {filteredSections.length === 0 && (

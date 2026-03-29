@@ -1,4 +1,5 @@
 import type { Section, Progress } from '../types';
+import { MajorasMask } from './MajorasMask';
 
 interface HeaderProps {
   sections: Section[];
@@ -18,7 +19,7 @@ export function Header({ sections, progress, onResetAll }: HeaderProps) {
     <header className="app-header">
       <div className="header-content">
         <div className="header-title-row">
-          <div className="header-mask">🌙</div>
+          <MajorasMask size={48} className="header-mask-svg" />
           <div>
             <h1 className="header-title">Majora's Mask</h1>
             <p className="header-subtitle">100% Walkthrough</p>

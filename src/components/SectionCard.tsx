@@ -8,6 +8,8 @@ interface SectionCardProps {
   progress: Progress;
   onToggle: (itemId: string) => void;
   sectionIndex: number;
+  isCurrent: boolean;
+  onCompleteUpTo: () => void;
 }
 
 type FilterType = 'all' | ItemType;
@@ -17,8 +19,9 @@ interface ItemGroup {
   items: ChecklistItem[];
 }
 
-export function SectionCard({ section, progress, onToggle, sectionIndex }: SectionCardProps) {
-  const [collapsed, setCollapsed] = useState(false);
+export function SectionCard({ section, progress, onToggle, sectionIndex, isCurrent, onCompleteUpTo }: SectionCardProps) {
+  // Only the current chapter starts expanded
+  const [collapsed, setCollapsed] = useState(!isCurrent);
   const [filter, setFilter] = useState<FilterType>('all');
 
   const completed = section.items.filter((i) => progress[i.id]).length;
@@ -50,7 +53,7 @@ export function SectionCard({ section, progress, onToggle, sectionIndex }: Secti
   }, [filteredItems]);
 
   return (
-    <div className={`section-card ${isDone ? 'section-done' : ''}`}>
+    <div className={`section-card ${isDone ? 'section-done' : ''}${isCurrent ? ' section-current' : ''}`}>
       <button
         className="section-header"
         onClick={() => setCollapsed(!collapsed)}
@@ -59,7 +62,10 @@ export function SectionCard({ section, progress, onToggle, sectionIndex }: Secti
         <div className="section-header-left">
           <span className="section-icon">{section.icon}</span>
           <div className="section-title-group">
-            <span className="section-number">Chapter {sectionIndex + 1}</span>
+            <span className="section-number">
+              Chapter {sectionIndex + 1}
+              {isCurrent && <span className="current-badge">Current</span>}
+            </span>
             <h2 className="section-title">{section.title}</h2>
           </div>
         </div>
@@ -83,6 +89,12 @@ export function SectionCard({ section, progress, onToggle, sectionIndex }: Secti
         <div className="section-body">
           {section.description && (
             <p className="section-description">{section.description}</p>
+          )}
+
+          {!isDone && (
+            <button className="complete-upto-btn" onClick={onCompleteUpTo}>
+              ✓ Complete up to here
+            </button>
           )}
 
           {types.length > 1 && (

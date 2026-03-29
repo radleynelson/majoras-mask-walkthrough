@@ -1,37 +1,14 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// Simple in-memory rate limiting per IP
-const rateLimits = new Map();
-const RATE_LIMIT = 20; // requests per window
-const RATE_WINDOW = 60 * 60 * 1000; // 1 hour
-
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const entry = rateLimits.get(ip);
-  if (!entry || now - entry.start > RATE_WINDOW) {
-    rateLimits.set(ip, { start: now, count: 1 });
-    return true;
-  }
-  if (entry.count >= RATE_LIMIT) return false;
-  entry.count++;
-  return true;
-}
+const CLAUDE_URL = process.env.CLAUDE_INFERENCE_URL;
+const CLAUDE_TOKEN = process.env.CLAUDE_INFERENCE_TOKEN;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
-  if (!checkRateLimit(ip)) {
-    return res.status(429).json({ error: 'Too many requests. Try again later.' });
-  }
-
   const { message, history, chapterContext } = req.body;
 
-  if (!message || typeof message !== 'string' || message.length > 1000) {
+  if (!message || typeof message !== 'string' || message.length > 5000) {
     return res.status(400).json({ error: 'Invalid message' });
   }
 
@@ -43,36 +20,41 @@ Keep responses focused and under 200 words unless the player needs a detailed wa
 
 ${chapterContext ? `The player is currently on this chapter of the walkthrough:\n\n${chapterContext}` : ''}`;
 
-  // Build chat history from previous messages
+  // Build history for the Claude inference server
   const chatHistory = [];
   if (Array.isArray(history)) {
-    for (const msg of history.slice(-20)) { // Keep last 20 messages max
-      if (msg.role === 'user' || msg.role === 'model') {
-        chatHistory.push({
-          role: msg.role,
-          parts: [{ text: msg.text }],
-        });
-      }
+    for (const msg of history.slice(-20)) {
+      chatHistory.push({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        text: msg.text,
+      });
     }
   }
 
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      systemInstruction: systemPrompt,
+    const response = await fetch(`${CLAUDE_URL}/api/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${CLAUDE_TOKEN}`,
+      },
+      body: JSON.stringify({
+        message,
+        systemPrompt,
+        history: chatHistory,
+      }),
     });
 
-    const chat = model.startChat({
-      history: chatHistory,
-      generationConfig: { maxOutputTokens: 2000 },
-    });
+    const data = await response.json();
 
-    const result = await chat.sendMessage(message);
-    const response = result.response.text();
+    if (!response.ok) {
+      console.error('Claude inference error:', data);
+      return res.status(response.status).json({ error: data.error || 'AI service error.' });
+    }
 
-    return res.status(200).json({ reply: response });
+    return res.status(200).json({ reply: data.reply });
   } catch (err) {
-    console.error('Gemini API error:', err);
+    console.error('Claude inference error:', err);
     return res.status(500).json({ error: 'AI service error. Please try again.' });
   }
 }
